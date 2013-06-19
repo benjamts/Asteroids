@@ -9,12 +9,6 @@ MovingObject.prototype.update = function(dx, dy){
 }
 
 MovingObject.prototype.offScreen = function(){
-  // if (this.x < 0 || this.x > WIDTH || this.y < 0 || this.y > HEIGHT) {
-  //   return true;
-  // } else {
-  //   return false;
-  // }
-// }
 
   if (this.x < 0){
     this.x = WIDTH;
@@ -35,8 +29,8 @@ MovingObject.prototype.offScreen = function(){
 var Asteroid = function(startX, startY){
   MovingObject.apply(this, [startX, startY]);
   this.r = 5 + Math.random() * 50;
-  this.dx = -5 + (Math.random() * 10);
-  this.dy = -5 + (Math.random() * 10);
+  this.dx = -2 + (Math.random() * 4);
+  this.dy = -2 + (Math.random() * 4);
 }
 
 function F(){}
@@ -84,23 +78,40 @@ Asteroid.prototype.draw = function(ctx, x, y, r){
 //---------------------------------------------------------
 
 var Game = function(ctx){
+  var that = this;
+  this.bullets = [];
   this.asteroids = [];
   this.ship = new Ship(WIDTH/2, HEIGHT/2);
   for (var i = 0; i < 20; i++){
     this.asteroids.push(randomAsteroid());
   }
 
-  key('a', function(){ship.steer(-0.1)});
-  key('d', function(){ship.steer(0.1)});
-  key('w', function(){ship.power(2,2)});
+  // Key bindings.
+  key('a', function(){that.ship.steer(-0.1)});
+  key('d', function(){that.ship.steer(0.1)});
+  key('w', function(){that.ship.accelerate()});
+  key('s', function(){that.ship.decelerate()});
+
+  key('space', function(){
+    var newBullet = that.ship.fireBullet();
+    that.bullets.push(newBullet);
+    console.log(newBullet);
+    console.log(that.bullets);
+  });
+
+
 }
 
 Game.prototype.draw = function (ctx){
-  ship = this.ship
+  var ship = this.ship
   ship.draw(ctx, ship.x, ship.y)
   for(var i = 0; i < this.asteroids.length; i++){
     asteroid = this.asteroids[i];
     this.asteroids[i].draw(ctx, asteroid.x, asteroid.y, asteroid.r);
+  }
+  for(var j = 0; j < this.bullets.length; j++){
+    bullet = this.bullets[j];
+    this.bullets[j].draw(ctx, bullet.x, bullet.y, bullet.r);
   }
 }
 
@@ -117,18 +128,32 @@ Game.prototype.start = function(ctx){
 }
 
 Game.prototype.update = function(){
-  asteroids = this.asteroids;
-  ship = this.ship;
+  var asteroids = this.asteroids;
+  var ship = this.ship;
+  var bullets = this.bullets;
 
   ship.update(ship.vx, ship.vy);
 
   for(var i = 0; i < asteroids.length; i++){
-    asteroid = asteroids[i]
+    var asteroid = asteroids[i]
     asteroid.update(asteroid.dx,asteroid.dy);
 
     asteroid.offScreen();
-    ship.offScreen();
   }
+
+  for (var i = 0; i < bullets.length; i++){
+    var bullet = bullets[i];
+    bullet.update(bullet.vx, bullet.vy);
+    if (bullet.offScreen()){
+      bullets.splice(i, 1);
+    }
+
+    for (var j = 0; j < asteroids.length; j++){
+
+    }
+  }
+
+  ship.offScreen();
 
   if (ship.isHit(asteroids)){
     window.alert("You LOSE!!!!");
@@ -163,7 +188,9 @@ Ship.prototype.draw = function(ctx,x,y){
 
   var noseX = nose[0]*Math.cos(this.angle) - nose[1]*Math.sin(this.angle);
   var noseY = nose[0]*Math.sin(this.angle) + nose[1]*Math.cos(this.angle);
-  nose = [noseX, noseY];
+  this.nose = [noseX, noseY];
+
+  nose = this.nose;
 
   var leftWingX = leftWing[0]*Math.cos(this.angle) - leftWing[1]*Math.sin(this.angle);
   var leftWingY = leftWing[0]*Math.sin(this.angle) + leftWing[1]*Math.cos(this.angle);
@@ -198,9 +225,15 @@ Ship.prototype.isHit = function(asteroids){
   }
 }
 
-Ship.prototype.power = function(){
+Ship.prototype.accelerate = function(){
   this.vx += 0.2*Math.sin(this.angle);
   this.vy += -0.2*Math.cos(this.angle);
+}
+
+
+Ship.prototype.decelerate = function(){
+  this.vx -= 0.2*Math.sin(this.angle);
+  this.vy -= -0.2*Math.cos(this.angle);
 }
 
 
@@ -208,4 +241,38 @@ Ship.prototype.steer = function(dAngle){
   this.angle += dAngle;
 }
 
+Ship.prototype.fireBullet= function(){
+  var bullet = new Bullet(this.x + this.nose[0], this.y + this.nose[1], this.angle);
+  return bullet;
+}
+
+//-----------------------------------------------------
+
+var Bullet = function(startX, startY, angle){
+  MovingObject.apply(this,[startX, startY]);
+  this.r = 3;
+  this.speed = 15;
+  this.angle = angle;
+  this.vx = this.speed * Math.sin(this.angle);
+  this.vy = this.speed * -Math.cos(this.angle);
+
+}
+
+Bullet.prototype = new F();
+
+Bullet.prototype.offScreen = function(){
+    if (this.x < 0 || this.x > WIDTH || this.y < 0 || this.y > HEIGHT) {
+      return true;
+    } else {
+      return false;
+    }
+}
+
+Bullet.prototype.draw = function (ctx){
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.r,0, Math.PI*2, true);
+  ctx.fillStyle = "#f00";
+  ctx.fill();
+  ctx.closePath();
+}
 
