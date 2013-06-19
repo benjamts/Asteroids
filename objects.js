@@ -24,6 +24,17 @@ MovingObject.prototype.offScreen = function(){
   }
 }
 
+
+MovingObject.prototype.isHit = function(object){
+  var deltaX = this.x - object.x;
+  var deltaY = this.y - object.y;
+  var distance = (Math.sqrt(Math.pow(deltaX, 2) + (Math.pow(deltaY, 2))));
+
+  if (distance < (this.r + object.r)){
+    return true;
+  }
+}
+
 //---------------------------------------------------------
 
 var Asteroid = function(startX, startY){
@@ -70,9 +81,24 @@ Asteroid.prototype.draw = function(ctx, x, y, r){
 
   ctx.beginPath();
   ctx.arc(x,y,r,0, Math.PI*2,true);
-  ctx.strokeStyle = "#000000";
+  ctx.strokeStyle = "#ffffff";
   ctx.stroke();
   ctx.closePath();
+}
+
+Asteroid.prototype.explode = function(){
+  var spawns = 2 + Math.floor(Math.random() * 4);
+  var newAsteroids = [];
+
+  for(var i=0; i < spawns; i++){
+    var newAsteroid = new Asteroid(this.x, this.y);
+    newAsteroid.r = Math.floor(this.r/spawns);
+    if(newAsteroid.r > 10){
+      newAsteroids.push(newAsteroid);
+
+    }
+  }
+  return newAsteroids;
 }
 
 //---------------------------------------------------------
@@ -87,16 +113,10 @@ var Game = function(ctx){
   }
 
   // Key bindings.
-  key('a', function(){that.ship.steer(-0.1)});
-  key('d', function(){that.ship.steer(0.1)});
-  key('w', function(){that.ship.accelerate()});
-  key('s', function(){that.ship.decelerate()});
 
   key('space', function(){
     var newBullet = that.ship.fireBullet();
     that.bullets.push(newBullet);
-    console.log(newBullet);
-    console.log(that.bullets);
   });
 
 
@@ -120,6 +140,9 @@ Game.prototype.start = function(ctx){
   var loop = setInterval(function(){
 
     ctx.clearRect(0,0,WIDTH,HEIGHT);
+    ctx.fillStyle = "#000000"
+    ctx.fillRect(0,0,WIDTH, HEIGHT)
+
     that.draw(ctx);
     if(that.update()){
       clearInterval(loop);
@@ -132,11 +155,21 @@ Game.prototype.update = function(){
   var ship = this.ship;
   var bullets = this.bullets;
 
+  if (key.isPressed("A")) that.ship.steer(-0.1);
+  if (key.isPressed("D")) that.ship.steer(0.1);
+  if (key.isPressed("W")) that.ship.accelerate();
+  if (key.isPressed("S")) that.ship.decelerate();
+
   ship.update(ship.vx, ship.vy);
 
   for(var i = 0; i < asteroids.length; i++){
     var asteroid = asteroids[i]
     asteroid.update(asteroid.dx,asteroid.dy);
+
+    if (ship.isHit(asteroid)){
+      window.alert("You LOSE!!!!");
+      return true;
+    }
 
     asteroid.offScreen();
   }
@@ -147,18 +180,19 @@ Game.prototype.update = function(){
     if (bullet.offScreen()){
       bullets.splice(i, 1);
     }
-
+    var newAsteroids = [];
     for (var j = 0; j < asteroids.length; j++){
-
+      if (bullet.isHit(asteroids[j])){
+        this.asteroids = asteroids.concat(asteroids[j].explode());
+        this.asteroids.splice(j,1);
+        bullets.splice(i,1);
+      }
     }
+
   }
 
   ship.offScreen();
 
-  if (ship.isHit(asteroids)){
-    window.alert("You LOSE!!!!");
-    return true;
-  }
   return false;
 }
 
@@ -203,37 +237,38 @@ Ship.prototype.draw = function(ctx,x,y){
 
   ctx.beginPath();
 
-  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "#ffffff";
 
   ctx.moveTo(x + noseX, y + noseY);
   ctx.lineTo(x+leftWing[0], y+leftWing[1]);
   ctx.lineTo(x+rightWing[0], y+rightWing[1]);
-  ctx.fill();
+  ctx.lineTo(x+ noseX, y+noseY)
+  ctx.stroke();
   ctx.closePath();
-}
-
-Ship.prototype.isHit = function(asteroids){
-  for(var i = 0; i < asteroids.length; i++){
-    asteroid = asteroids[i];
-    var deltaX = this.x - asteroid.x;
-    var deltaY = this.y - asteroid.y;
-    var distance = (Math.sqrt(Math.pow(deltaX, 2) + (Math.pow(deltaY, 2))));
-
-    if (distance < (this.r + asteroid.r)){
-      return true;
-    }
-  }
 }
 
 Ship.prototype.accelerate = function(){
   this.vx += 0.2*Math.sin(this.angle);
+  if (this.vx > 10){
+    this.vx = 10;
+  }
   this.vy += -0.2*Math.cos(this.angle);
+  if (this.vy > 10){
+    this.vy = 10;
+  }
 }
 
 
 Ship.prototype.decelerate = function(){
   this.vx -= 0.2*Math.sin(this.angle);
+  if (this.vx > 10){
+    this.vx = 10;
+  }
   this.vy -= -0.2*Math.cos(this.angle);
+  if (this.vy > 10){
+    this.vy = 10;
+  }
+
 }
 
 
