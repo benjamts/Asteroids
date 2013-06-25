@@ -105,8 +105,9 @@ var toRadians = function(degrees) {
 
 function A(){}
 A.prototype = MovingObject.prototype;
-A.constructor = "Asteroid";
+
 Asteroid.prototype = new A();
+Asteroid.prototype.constructor = Asteroid;
 
 var randomAsteroid = function(){
   var asteroidRadius = 10 + Math.random() * 50;
@@ -157,6 +158,7 @@ var Game = function(ctx){
   var that = this;
   this.bullets = [];
   this.asteroids = [];
+  this.pointTags = [];
   this.ship = new Ship(WIDTH/2, HEIGHT/2);
   this.points = 0;
   this.startTime = new Date().getTime();
@@ -181,6 +183,7 @@ Game.prototype.elapsedTime = function(){
 }
 
 Game.prototype.draw = function (ctx){
+  var that = this;
   var ship = this.ship
   ship.draw(ctx, ship.x, ship.y)
   for(var i = 0; i < this.asteroids.length; i++){
@@ -191,6 +194,51 @@ Game.prototype.draw = function (ctx){
     bullet = this.bullets[j];
     this.bullets[j].draw(ctx, bullet.x, bullet.y, bullet.r);
   }
+
+  _.each(this.pointTags, function(tag, tagIndex) {
+    tag.update();
+    if (tag.opacity < 0.1) {
+      that.pointTags[tagIndex] = null;
+    }
+    tag.draw(ctx);
+  });
+  that.pointTags = _.compact(that.pointTags);
+
+  that.drawPointBox(ctx);
+  that.drawTimeBox(ctx);
+}
+
+Game.prototype.drawPointBox = function(ctx) {
+  ctx.clearRect(WIDTH,0,150,40);
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(WIDTH - 150,0,150, 40);
+
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(WIDTH - 150,0,150, 40);
+
+  ctx.fillStyle = "rgba(255,255,255,1)";
+  ctx.font="20px Arial";
+  ctx.fillText(this.points, WIDTH - 140, 30);
+}
+
+Game.prototype.drawTimeBox = function(ctx) {
+  ctx.clearRect(0,0,150,40);
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0,0,150, 40);
+
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(0,0,150, 40);
+
+  ctx.fillStyle = "rgba(255,255,255,1)";
+  ctx.font="20px Arial";
+
+  var minutes = Math.floor(this.elapsedTime()/60000);
+  if (minutes < 10 ) {minutes = "0" + minutes}
+  var seconds = Math.floor((this.elapsedTime()%60000)/1000);
+  if (seconds < 10 ) {seconds = "0" + seconds}
+  var milliseconds = Math.floor((this.elapsedTime()%1000)/10);
+  if (milliseconds < 10 ) {milliseconds = "0" + milliseconds}
+  ctx.fillText(minutes + ":" + seconds + ":" + milliseconds, 10, 30);
 }
 
 Game.prototype.start = function(ctx){
@@ -226,12 +274,13 @@ Game.prototype.update = function(){
 
   ship.update(ship.vx, ship.vy);
 
+
   for(var i = 0; i < asteroids.length; i++){
     var asteroid = asteroids[i]
     asteroid.update(asteroid.dx,asteroid.dy);
 
     if (ship.isDestroyed(asteroid)){
-      window.alert("You've failed. Earth will be destroyed by Asteroids. You earned " + this.points + " points. You lasted " + this.elapsedTime()/1000 + " seconds before you were obliterated by space rocks.");
+      window.alert("You've failed. Earth will be destroyed by Asteroids. You earned " + this.points + " points. You lasted " + Math.floor(this.elapsedTime()/1000) + " seconds before you were obliterated by space rocks.");
       return true;
     }
     asteroid.offScreen();
@@ -247,10 +296,12 @@ Game.prototype.update = function(){
     for (var j = 0; j < asteroids.length; j++){
       if (bullet.isHit(asteroids[j])){
         var time = (30000 - this.elapsedTime())/10000;
-        if (time < 0) {
+        if (time < 1) {
           time = 1;
         }
-        this.points += (Math.floor((100-asteroids[j].r) * time));
+        var pointsGained = (Math.floor((100-asteroids[j].r) * time * (this.pointTags.length + 1)))
+        this.pointTags.push(new Point(asteroids[j].x, asteroids[j].y, pointsGained));
+        this.points += pointsGained;
         this.asteroids = asteroids.concat(asteroids[j].explode());
         this.asteroids.splice(j,1);
         bullets.splice(i,1);
@@ -269,7 +320,7 @@ Game.prototype.win = function(){
       time = 100;
     }
     this.points += (time * 10);
-    window.alert("Congratulations, you've saved Earth! You earned " + this.points + " points! It took you " + this.elapsedTime()/1000 + " seconds to eliminate the threat.");
+    window.alert("Congratulations, you've saved Earth! You earned " + this.points + " points! It took you " + Math.floor(this.elapsedTime()/1000) + " seconds to eliminate the threat.");
     return true;
   }
 }
@@ -338,7 +389,6 @@ Ship.prototype.isDestroyed = function(asteroid) {
   });
 
   return destroyed;
-
 }
 
 //-----------------------------------------------------
@@ -374,3 +424,25 @@ Bullet.prototype.draw = function (ctx){
   ctx.closePath();
 }
 
+//--------------------------------------------------------
+var Point = function(startX, startY, pointValue) {
+  this.x = startX;
+  this.y = startY;
+  this.pointValue = pointValue;
+  this. vx = 0;
+  this.vy = 4;
+  this.dy = -1;
+  this.opacity = 1.5;
+}
+
+Point.prototype.update = function() {
+  this.y += this.vy;
+  this.vy += this.dy;
+  this.opacity -= 0.05;
+}
+
+Point.prototype.draw = function(ctx) {
+  ctx.fillStyle = "rgba(255,0,0," + this.opacity + ")"
+  ctx.font="20px Arial"
+  ctx.fillText(this.pointValue, this.x, this.y);
+}
