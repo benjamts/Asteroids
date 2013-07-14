@@ -11,7 +11,7 @@ MovingObject.prototype.update = function(dx, dy){
 
 MovingObject.prototype.offScreen = function(){
 
-  if (this.x < 0){
+  if (this.x < -this.r){
     this.x = WIDTH + this.r;
   }
   else if (this.x > WIDTH + this.r ){
@@ -58,25 +58,6 @@ MovingObject.prototype.isHit = function(object){
 				var intX = (objectB * thisC - thisB * objectC)/det;
 				var intY = (thisA * objectC - objectA * thisC)/det;
 
-				// thisY1 = Math.floor(thisY1);
-				// thisY2 = Math.floor(thisY2);
-				// thisX1 = Math.floor(thisX1);
-				// thisX2 = Math.floor(thisX2);
-				// thisA = Math.floor(thisA);
-				// thisB = Math.floor(thisB);
-				// thisC = Math.floor(thisC);
-				//
-				// objectY1 = Math.floor(objectY1);
-				// objectY2 = Math.floor(objectY2);
-				// objectX1 = Math.floor(objectX1);
-				// objectX2 = Math.floor(objectX2);
-				// objectA = Math.floor(objectA);
-				// objectB = Math.floor(objectB);
-				// objectC = Math.floor(objectC);
-				//
-				// intX = Math.floor(intX);
-				// intY = Math.floor(intY);
-
 				if(((thisX1 < intX && intX < thisX2) || (thisX1 > intX && intX > thisX2)) &&
 					((thisY1 < intY && intY < thisY2) || (thisY1 > intY && intY > thisY2)) &&
 					((objectX1 < intX && intX < objectX2) || (objectX1 > intX && intX > objectX2)) &&
@@ -115,6 +96,7 @@ MovingObject.prototype.draw = function(ctx,x,y){
 
   ctx.beginPath();
   ctx.strokeStyle = "#ffffff";
+	ctx.lineWidth= 2;
 
   ctx.moveTo(x + that.rotShape[0][0], y + that.rotShape[0][1]);
   that.rotShape.push(that.rotShape.shift());
@@ -136,7 +118,7 @@ var Asteroid = function(startX, startY, r, startAngle){
   this.dy = -2 + (Math.random() * 4);
   this.shape = generateAsteroidShape(r);
   this.angle = 0.00;
-  this.spin = 0//Math.random() * 0.1;
+  this.spin = Math.random() * 0.1;
   this.rotShape;
 }
 
