@@ -5,12 +5,27 @@
 <body>
   <!-- // <script src="jquery-1.9.1.js"></script> -->
   <script src="underscore.js"></script>
+	<script src="http://www.google.com/jsapi"></script>
+	<link rel="stylesheet" type="text/css"
+		href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="stylesheet.css">
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
   <script src="keymaster.js"></script>
   <script src="library.js"></script>
   <script src="objects.js"></script>
-  <canvas id="canvas" width="900" height="900"></canvas>
-  <script>var test = new Asteroids();
-  </script>
+	<div id="menu">
+		<p>WASD or arrow keys to steer</p>
+		<p>Spacebar to shoot</p>
+		<p>Smaller asteroids are worth more points</p>
+		<p>Kill asteroids in rapid succession for combos</p>
+	</div>
+	<div class="all_objects">
+		<div id="canvas_div">
+		  <canvas id="canvas" width="900" height="900"></canvas>
+		</div>
+	</div>
+	<script src="menu.js"></script>
 </body>
 
 </html>

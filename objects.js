@@ -12,28 +12,84 @@ MovingObject.prototype.update = function(dx, dy){
 MovingObject.prototype.offScreen = function(){
 
   if (this.x < 0){
-    this.x = WIDTH;
+    this.x = WIDTH + this.r;
   }
-  else if (this.x > WIDTH){
-    this.x = 0;
+  else if (this.x > WIDTH + this.r ){
+    this.x = -this.r;
   }
-  else if (this.y < 0){
-    this.y = HEIGHT;
+  else if (this.y < -this.r){
+    this.y = HEIGHT + this.r ;
   }
-  else if (this.y > HEIGHT){
-    this.y = 0;
+  else if (this.y > HEIGHT + this.r ){
+    this.y = -this.r;
   }
 }
 
 
 MovingObject.prototype.isHit = function(object){
-  var deltaX = this.x - object.x;
-  var deltaY = this.y - object.y;
-  var distance = (Math.sqrt(Math.pow(deltaX, 2) + (Math.pow(deltaY, 2))));
+	var thisShape = this.rotShape.slice(0);
+	thisShape.push(thisShape[0]);
+	var objectShape = object.rotShape.slice(0);
+	objectShape.push(objectShape[0]);
 
-  if (distance < (this.r + object.r)){
-    return true;
-  }
+  for(var i = thisShape.length - 1; i>0; i-=1) {
+		var thisY1 = this.y + thisShape[i][1];
+		var thisY2 = this.y + thisShape[(i-1)][1];
+		var thisX1 = this.x + thisShape[i][0];
+		var thisX2 = this.x + thisShape[(i-1)][0];
+
+		var thisA = thisY2 - thisY1;
+		var thisB = thisX1 - thisX2;
+		var thisC = thisA * thisX1 + thisB * thisY1;
+
+  	for(var j = objectShape.length - 1; j>0; j-=1) {
+			var objectY1 = object.y + objectShape[j][1];
+			var objectY2 = object.y + objectShape[(j-1)][1];
+			var objectX1 = object.x + objectShape[j][0];
+			var objectX2 = object.x + objectShape[(j-1)][0];
+
+			var objectA = objectY2 - objectY1;
+			var objectB = objectX1 - objectX2;
+			var objectC = objectA * objectX1 + objectB * objectY1;
+
+			var det = thisA * objectB - objectA * thisB;
+
+			if(det != 0) {
+				var intX = (objectB * thisC - thisB * objectC)/det;
+				var intY = (thisA * objectC - objectA * thisC)/det;
+
+				// thisY1 = Math.floor(thisY1);
+				// thisY2 = Math.floor(thisY2);
+				// thisX1 = Math.floor(thisX1);
+				// thisX2 = Math.floor(thisX2);
+				// thisA = Math.floor(thisA);
+				// thisB = Math.floor(thisB);
+				// thisC = Math.floor(thisC);
+				//
+				// objectY1 = Math.floor(objectY1);
+				// objectY2 = Math.floor(objectY2);
+				// objectX1 = Math.floor(objectX1);
+				// objectX2 = Math.floor(objectX2);
+				// objectA = Math.floor(objectA);
+				// objectB = Math.floor(objectB);
+				// objectC = Math.floor(objectC);
+				//
+				// intX = Math.floor(intX);
+				// intY = Math.floor(intY);
+
+				if(((thisX1 < intX && intX < thisX2) || (thisX1 > intX && intX > thisX2)) &&
+					((thisY1 < intY && intY < thisY2) || (thisY1 > intY && intY > thisY2)) &&
+					((objectX1 < intX && intX < objectX2) || (objectX1 > intX && intX > objectX2)) &&
+					((objectY1 < intY && intY < objectY2) || (objectY1 > intY && intY > objectY2))){
+						console.log(object.rotShape);
+						console.log(objectShape);
+
+						return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 MovingObject.prototype.rotate = function() {
@@ -80,22 +136,22 @@ var Asteroid = function(startX, startY, r, startAngle){
   this.dy = -2 + (Math.random() * 4);
   this.shape = generateAsteroidShape(r);
   this.angle = 0.00;
-  this.spin = Math.random() * 0.1;
+  this.spin = 0//Math.random() * 0.1;
   this.rotShape;
 }
 
 var generateAsteroidShape = function(radius) {
   var allCoordinates = [];
 
-  for(angle = 0; angle < 360; angle += (0 + Math.floor(Math.random() * 100))) {
+  for(var angle = 0; angle < 360; angle += (0 + Math.floor(Math.random() * 100))) {
     allCoordinates.push(calculateCoordinates(angle, radius));
   }
   return allCoordinates;
 }
 
 var calculateCoordinates = function(angle, radius) {
-  newX = radius * Math.cos(toRadians(angle));
-  newY = radius * Math.sin(toRadians(angle));
+  var newX = radius * Math.cos(toRadians(angle));
+  var newY = radius * Math.sin(toRadians(angle));
   return [newX, newY];
 }
 
@@ -134,7 +190,7 @@ var randomAsteroid = function(){
     var startY = HEIGHT;
     break;
     }
-    asteroid = new Asteroid(startX, startY, asteroidRadius);
+    var asteroid = new Asteroid(startX, startY, asteroidRadius);
     return asteroid;
 }
 
@@ -185,6 +241,11 @@ Game.prototype.elapsedTime = function(){
 Game.prototype.draw = function (ctx){
   var that = this;
   var ship = this.ship
+
+  ctx.clearRect(0,0,WIDTH,HEIGHT);
+  ctx.fillStyle = "#000000"
+  ctx.fillRect(0,0,WIDTH, HEIGHT)
+
   ship.draw(ctx, ship.x, ship.y)
   for(var i = 0; i < this.asteroids.length; i++){
     asteroid = this.asteroids[i];
@@ -242,12 +303,11 @@ Game.prototype.drawTimeBox = function(ctx) {
 }
 
 Game.prototype.start = function(ctx){
-  that = this;
+	this.ctx = ctx;
+  var that = this;
   var loop = setInterval(function(){
 
-    ctx.clearRect(0,0,WIDTH,HEIGHT);
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(0,0,WIDTH, HEIGHT)
+
 
     that.draw(ctx);
 
@@ -267,10 +327,10 @@ Game.prototype.update = function(){
     return true;
   };
 
-  if (key.isPressed("A")) that.ship.steer(-0.1);
-  if (key.isPressed("D")) that.ship.steer(0.1);
-  if (key.isPressed("W")) that.ship.accelerate(1);
-  if (key.isPressed("S")) that.ship.accelerate(-1);
+  if (key.isPressed("left") || key.isPressed("A")) that.ship.steer(-0.1);
+  if (key.isPressed("right") || key.isPressed("D")) that.ship.steer(0.1);
+  if (key.isPressed("up") || key.isPressed("W")) that.ship.accelerate(1);
+  if (key.isPressed("down") || key.isPressed("S")) that.ship.accelerate(-1);
 
   ship.update(ship.vx, ship.vy);
 
@@ -279,12 +339,13 @@ Game.prototype.update = function(){
     var asteroid = asteroids[i]
     asteroid.update(asteroid.dx,asteroid.dy);
 
-    if (ship.isDestroyed(asteroid)){
-      window.alert("You've failed. Earth will be destroyed by Asteroids. You earned " + this.points + " points. You lasted " + Math.floor(this.elapsedTime()/1000) + " seconds before you were obliterated by space rocks.");
+    if (ship.isHit(asteroid)){
+			gameOver("<p>You've failed. Earth will be destroyed by Asteroids.</p> <p>You earned " + that.points + " points.</p> <p>You lasted " + Math.floor(that.elapsedTime()/1000) + " seconds before you were obliterated by space rocks.</p>");
       return true;
     }
     asteroid.offScreen();
   }
+
 
   for (var i = 0; i < bullets.length; i++){
     var bullet = bullets[i];
@@ -320,7 +381,7 @@ Game.prototype.win = function(){
       time = 100;
     }
     this.points += (time * 10);
-    window.alert("Congratulations, you've saved Earth! You earned " + this.points + " points! It took you " + Math.floor(this.elapsedTime()/1000) + " seconds to eliminate the threat.");
+    gameOver("<p>Congratulations, you've saved Earth!</p> <p>You earned " + this.points + " points!</p> <p>It took you " + Math.floor(this.elapsedTime()/1000) + " seconds to eliminate the threat.</p>");
     return true;
   }
 }
@@ -341,7 +402,6 @@ var Ship = function(startX, startY){
 
 S = function() {}
 S.prototype = MovingObject.prototype;
-S.constructor = "Ship";
 Ship.prototype = new S();
 
 Ship.prototype.accelerate = function(direction){
@@ -405,7 +465,6 @@ var Bullet = function(startX, startY, angle){
 
 B = function(){}
 B.prototype = MovingObject.prototype;
-B.constructor = "Bullet";
 Bullet.prototype = new B();
 
 Bullet.prototype.offScreen = function(){
@@ -422,6 +481,16 @@ Bullet.prototype.draw = function (ctx){
   ctx.fillStyle = "#ffffff";
   ctx.fill();
   ctx.closePath();
+}
+
+Bullet.prototype.isHit = function(object){
+  var deltaX = this.x - object.x;
+  var deltaY = this.y - object.y;
+  var distance = (Math.sqrt(Math.pow(deltaX, 2) + (Math.pow(deltaY, 2))));
+
+  if (distance < (this.r + object.r)){
+    return true;
+  }
 }
 
 //--------------------------------------------------------

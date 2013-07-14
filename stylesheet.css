@@ -1,0 +1,47 @@
+body {
+	background-color: #cccccc;
+}
+
+#canvas {
+	border:2px solid black;
+	padding: 10px;
+	background-color:white;
+}
+
+#canvas_div {
+	width: 924;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.text_container {
+	width: 150px;
+	background-color: white;
+	padding:10px;
+	border:2px solid black;
+	text-align:center;
+}
+
+.all_objects {
+	width: 100%;
+	display:inline-block;
+}
+
+p {
+	text-align:center;
+}
+
+.ui-dialog-titlebar-close {
+  visibility: hidden;
+}
+
+.ui-dialog-title {
+  float:none !important;
+  display: block;
+  text-align: center;
+}
+
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+	text-align:center;
+	float: none;
+}
