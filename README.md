@@ -5,10 +5,10 @@ Asteroids
 A tribute to Asteroids by Atari Inc.
 
 Features:
-  * accurate collision detection
+  * accurate collision detection using line-line intersection
   * randomly generated asteroid shapes
-  * timer, points, and menu
+  * timer, points
+  * menu using jQuery UI
 
 This project used mostly JavaScript and the HTML5 canvas element.
 
-Time taken: two days.
