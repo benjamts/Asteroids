@@ -1,6 +1,6 @@
 Asteroids
 =========
-Check this project out at benjamts.github.io/Asteroids
+Check this project out at http://benjamts.github.io/Asteroids
 
 A tribute to Asteroids by Atari Inc.
 
