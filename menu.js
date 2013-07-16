@@ -1,3 +1,6 @@
+var instructions = "<p>WASD or arrow keys to steer</p><p>Spacebar to shoot</p><p>Smaller asteroids are worth more points</p><p>Kill asteroids in rapid succession for combos</p><p>Contact me at tyler.scott.benjamin@gmail.com or check out my profile at github.com/benjamts</p>"
+
+$( "#menu" ).html(instructions);
 $( "#menu" ).dialog({
   dialogClass: "no-close",
 	draggable: false,
@@ -20,7 +23,7 @@ $( "#menu" ).dialog({
 var gameOver = function(menu_text) {
 	$( "#menu" ).dialog({
 	  dialogClass: "no-close",
-		draggable: true,
+		draggable: false,
 		modal: true,
 		resizable: false,
 		show: "fade",
