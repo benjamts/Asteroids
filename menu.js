@@ -14,7 +14,7 @@ $( "#menu" ).dialog({
       text: "Start Game",
       click: function() {
         $( this ).dialog( "close" );
-				new Asteroids();
+		new Asteroids();
       }
     }
   ]
@@ -33,7 +33,7 @@ var gameOver = function(menu_text) {
 	      text: "New Game",
 	      click: function() {
 	        $( this ).dialog( "close" );
-					new Asteroids();
+			new Asteroids();
 	      }
 	    }
 	  ]
@@ -41,4 +41,6 @@ var gameOver = function(menu_text) {
 	$('#menu').html(menu_text);
 }
 
-
+$(window).resize(function() {
+    $("#menu").dialog("option", "position", "center");
+});

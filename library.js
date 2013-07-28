@@ -1,13 +1,12 @@
-var WIDTH;
-var HEIGHT;
-
 var Asteroids = function(){
   var elem = document.getElementById('canvas');
   var ctx = elem.getContext('2d');
 
-  WIDTH = 900//elem.width();
-  HEIGHT = 900//elem.height();
+  Asteroids.WIDTH = window.innerWidth; //elem.width();
+  Asteroids.HEIGHT = window.innerWidth; //elem.height();
+  ctx.canvas.height = Asteroids.HEIGHT;
+  ctx.canvas.width = Asteroids.WIDTH;
 
-  this.game = new Game(ctx);
+  this.game = new Asteroids.Game(ctx);
   this.game.start(ctx);
 }
