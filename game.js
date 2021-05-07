@@ -76,14 +76,14 @@ Asteroids.Game = (function(){
       this.bullets[j].draw(ctx, bullet.x, bullet.y, bullet.r);
     }
 
-    _.each(this.pointTags, function(tag, tagIndex) {
+    this.pointTags.forEach(function(tag, tagIndex) {
       tag.update();
       if (tag.opacity < 0.1) {
         that.pointTags[tagIndex] = null;
       }
       tag.draw(ctx);
     });
-    that.pointTags = _.compact(that.pointTags);
+    that.pointTags = that.pointTags.filter(Boolean);
 
     that.drawPointBox(ctx);
     that.drawTimeBox(ctx);

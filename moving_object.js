@@ -73,7 +73,7 @@ Asteroids.MovingObject = (function(){
 
   MovingObject.prototype.rotate = function() {
     var that = this;
-    that.rotShape = _.map(that.shape, function(coords) {
+    that.rotShape = (that.shape || []).map(function(coords) {
       var coordsX = coords[0]*Math.cos(that.angle) - coords[1]*Math.sin(that.angle);
       var coordsY = coords[0]*Math.sin(that.angle) + coords[1]*Math.cos(that.angle);
       return [coordsX, coordsY];
@@ -96,7 +96,7 @@ Asteroids.MovingObject = (function(){
 
     ctx.moveTo(this.x + this.rotShape[0][0], this.y + this.rotShape[0][1]);
     this.rotShape.push(this.rotShape.shift());
-    _.each(this.rotShape, function(coords){
+    this.rotShape.forEach(function(coords) {
       ctx.lineTo(that.x + coords[0], that.y + coords[1]);
     });
     ctx.stroke();
